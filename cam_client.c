@@ -18,7 +18,7 @@
 
 #pragma region DEF_CONST
 
-#define SDL_RENDER 0 //(DEBUG PURPOSE)
+#define SDL_RENDER 0//(DEBUG PURPOSE)
 
 #define MIN_BUFF 2
 #define REQ_BUFF 4
@@ -138,7 +138,7 @@ int main(int argc, char** argv){
     //Initialization of SDL2 (DEBUG PURPOSE)
     struct v4l2_format v4l_sd2l; 
     #if SDL_RENDER
-        init_render_sdl2(FRAME_WIDTH, FRAME_WEIGHT, 0);
+        init_render_sdl2(FRAME_WIDTH, FRAME_HEIGHT, 0);
         v4l_sd2l = my_fmt;
     #endif
 
@@ -225,9 +225,7 @@ int main(int argc, char** argv){
             //Taking the frame and sending to the server/render by SD2L
             if (process_frame(webcam_ds,socket_ds,buffers,&v4l_sd2l)) break;
         }
-        #if VERBOSE 
-            printf("Frame: %d CATCHED \t SENT to Cserver\n",i+1);
-        #endif
+        printf("Frame: %d CATCHED \t SENT to Cserver\n",i+1);
         i++;
     }
 

@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <string.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -25,7 +26,13 @@ static void errno_exit(const char* s){
 
 #pragma region UTILS
 
-static void count_frame(int* frame_count, const unsigned char* buffer,int rec_bytes){
+void clean_string(char *str) {
+    for (int i = 0; i < strlen(str); i++) {
+        if (!isprint(str[i])) str[i] = '\0';  // Remove non-printable chars
+    }
+}
+
+static void count_frame(int* frame_count, const char* buffer,int rec_bytes){
     char prev_byte=0;
     for (int i = 0; i < rec_bytes; i++) {
         if (prev_byte == (char)0xFF && buffer[i] == (char)0xD8) {
@@ -76,18 +83,20 @@ int main(int argc, char *argv[]){
         char filename[MAX_FILE_LEN];
         read(client_ds, filename, MAX_FILE_LEN);
         printf("Filename: %s\n", filename);
+        clean_string(filename);
         int file_ds = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
-        unsigned char buffer[BUFFER_SIZE];
+        char *buffer = calloc(BUFFER_SIZE, sizeof(char));
         int frame_count=0;
-        int rec_bytes;
-
+        int rec_bytes;  
         //Receiving frames from client and writing them on file <filename>
-        while ((rec_bytes = recv(client_ds, buffer, sizeof(buffer), 0)) > 0) {
+        while ((rec_bytes = recv(client_ds, buffer, BUFFER_SIZE-1, 0)) > 0) {
             write(file_ds, buffer, rec_bytes);
+            
             // Count frames by detecting MJPEG start marker (0xFF 0xD8)
             count_frame(&frame_count,buffer,rec_bytes);
         }
+        free(buffer);
 
         printf("File saved successfully. Frames received: %d\n",frame_count);
         //Command to convert MJPEG to MP4
