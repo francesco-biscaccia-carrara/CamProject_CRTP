@@ -207,7 +207,7 @@ int main(int argc, char** argv){
     
     //Catching the <num_frame> frames required and sending them to the server
     unsigned int count = num_frame;
-    int i=0;
+    int i =((count>0)? 0: count); //if <num_frame>=-1 --> acquire all the frames until  the client is interrupted
     while (i<count){
         for (;;){
             fd_set fds;

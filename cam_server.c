@@ -14,7 +14,7 @@
 #pragma region DEF_CONST 
 
 #define BUFFER_SIZE 4096
-#define MAX_FILE_LEN 1024
+#define MAX_FILE_LEN 512
 #define QUEUE_LEN 2
 #define CLEAR(x) memset(&(x), 0, sizeof(x))
 
@@ -27,10 +27,14 @@ static void errno_exit(const char* s){
 #pragma region UTILS
 
 void clean_string(char *str) {
-    for (int i = 0; i < strlen(str); i++) {
-        if (!isprint(str[i])) str[i] = '\0';  // Remove non-printable chars
-    }
+    for (int i = 0; i < strlen(str); i++) if (!isprint(str[i])) str[i] = '\0';  // Remove non-printable chars 
 }
+
+void change_extension(const char *input, char *output) {
+    sprintf(output,"%s", input); // Copy input filename
+    strcpy(strrchr(output, '.'), ".mp4"); // Replace extension
+}
+
 
 static void count_frame(int* frame_count, const char* buffer,int rec_bytes){
     char prev_byte=0;
@@ -45,13 +49,15 @@ static void count_frame(int* frame_count, const char* buffer,int rec_bytes){
 
 int main(int argc, char *argv[]){
     int port;
+    char convert=0;
 
     if(argc < 2){
-        printf("Usage: ./Cserver <port>\n");
+        printf("Usage: ./Cserver <port> <-c>\n");
         exit(0);
     }
     sscanf(argv[1], "%d", &port);
-
+    if(argc>2 && !strcmp(argv[2],"-c")) convert=1;
+    
     //Creating socket
     int socket_ds=-1;
     if ((socket_ds = socket(AF_INET, SOCK_STREAM, 0)) == -1) errno_exit("socket");
@@ -82,8 +88,8 @@ int main(int argc, char *argv[]){
         //Reading the filename received from the client
         char filename[MAX_FILE_LEN];
         read(client_ds, filename, MAX_FILE_LEN);
-        printf("Filename: %s\n", filename);
         clean_string(filename);
+        printf("Filename: %s\n", filename);
         int file_ds = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
         char *buffer = calloc(BUFFER_SIZE, sizeof(char));
@@ -100,7 +106,18 @@ int main(int argc, char *argv[]){
 
         printf("File saved successfully. Frames received: %d\n",frame_count);
         //Command to convert MJPEG to MP4
-        //ffmpeg -i filename -c:v libx264 -preset fast -crf 23 output.mp4
+        if(convert){
+            char output_filename[MAX_FILE_LEN];
+            change_extension(filename, output_filename);
+            
+            char command[4*MAX_FILE_LEN];
+            sprintf(command, "ffmpeg -i %s -c:v libx264 -preset fast -crf 23 %s > /dev/null 2>&1", filename, output_filename);
+            system(command);
+            printf("Conversion to MP4 complete: %s\n", output_filename);
+        }
+        
+
+        //ffmpeg -i %s -c:v libx264 -preset fast -crf 23 %s, filname, output filename
         
         //Closing file
         close(file_ds);
