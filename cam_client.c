@@ -200,8 +200,8 @@ int main(int argc, char** argv){
     
     // Catch the <num_frame> frames required and sending them to the server
     // if <num_frame>=-1 --> acquire frames until the client is stopped
-    int count = num_frame;
-    for(int i =((count>0)? 0: count);i<count;i++){
+    unsigned int count = num_frame; // = UINT_MAX = 4294967295
+    for(int i =(count > 0 ? 0 : count); i<count ;i++){
         while(TRUE){
             fd_set fds;
             FD_ZERO(&fds);
