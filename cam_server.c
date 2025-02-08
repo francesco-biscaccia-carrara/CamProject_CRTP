@@ -57,7 +57,7 @@ int main(int argc, char *argv[]){
     char convert=0;
 
     if(argc < 2){
-        printf("Usage: ./Cserver <port> <-c>\n");
+        printf("Usage: ./Cserver <port> [-c]\n");
         exit(0);
     }
     sscanf(argv[1], "%d", &port);
