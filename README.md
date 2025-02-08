@@ -55,7 +55,9 @@ Example:
 ---
 
 ## 📜 License
-🔓 **MIT License** – See `LICENSE` for details.
+This project is licensed under the MIT License with a Non-Commercial Clause - see the [LICENSE](LICENSE) file for details.
 
-Enjoy seamless webcam streaming with CamProject_CRTP! 🚀🎥
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+---
 
