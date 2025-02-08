@@ -1,0 +1,8 @@
+# Ignore object files and binaries
+*.o
+*.out
+*.a
+*.so
+*.dll
+
+Webcam_*

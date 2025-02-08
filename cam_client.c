@@ -64,7 +64,7 @@ static int process_frame(int webcam_ds, int socket_ds, struct buffer* buffers,co
     if (ioctl(webcam_ds, VIDIOC_DQBUF, &buf) == -1) errno_exit("VIDIOC_DQBUF");
 
     // Send the frame data to the server
-    if(send(socket_ds, buffers[buf.index].start, buf.bytesused, 0) == -1) errno_exit("frame_send");
+    if(send(socket_ds, buffers[buf.index].start, buf.bytesused, 0) == -1) errno_exit("Frame_send");
     
     #if SDL_RENDER
         render_frame(buffers[buf.index].start, buf.bytesused,v4l_sd2l);
@@ -101,16 +101,16 @@ int main(int argc, char** argv){
     sin.sin_port = htons(port);
 
     int socket_ds = -1;
-    if ((socket_ds = socket(AF_INET, SOCK_STREAM, 0)) == -1) errno_exit("socket");
+    if ((socket_ds = socket(AF_INET, SOCK_STREAM, 0)) == -1) errno_exit("Socket");
 
     // Connect to server localhost:<port>
-    if (connect(socket_ds,(struct sockaddr *)&sin, sizeof(sin)) == -1) errno_exit("connect");
+    if (connect(socket_ds,(struct sockaddr *)&sin, sizeof(sin)) == -1) errno_exit("Connect");
     printf("Connected to %s:%d\n", inet_ntoa(sin.sin_addr),port);
 
     // Send filename to server
     char filename[FILENAME_MAX_LEN];
     sprintf(filename,"Webcam_%d_%d_%d.mjpeg",FRAME_WIDTH,FRAME_HEIGHT,num_frame);
-    if (send(socket_ds, filename, strlen(filename), 0) == -1) errno_exit("send_filename");
+    if (send(socket_ds, filename, strlen(filename), 0) == -1) errno_exit("Send_filename");
     printf("Filename %s sent to %s:%d\n",filename,inet_ntoa(sin.sin_addr),port);
 
     // Initialize the webcam device
@@ -210,7 +210,7 @@ int main(int argc, char** argv){
             // Time interval for selection
             struct timeval tv = {.tv_sec=5,.tv_usec=0};
 
-            if(select(webcam_ds + 1, &fds, NULL, NULL, &tv)==-1) errno_exit("select");
+            if(select(webcam_ds + 1, &fds, NULL, NULL, &tv)==-1) errno_exit("Select");
             #if SDL_RENDER
                 render_sdl2_dispatch_events();
             #endif
@@ -236,7 +236,7 @@ int main(int argc, char** argv){
     // Close the webcam device
     if(close(webcam_ds)==-1)  errno_exit(dev_name);
     // Close the socket
-    if(close(socket_ds)==-1)  errno_exit("socket_close");
+    if(close(socket_ds)==-1)  errno_exit("Socket_close");
 
     return EXIT_SUCCESS;
 }

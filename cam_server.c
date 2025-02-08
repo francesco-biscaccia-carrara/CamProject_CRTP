@@ -65,11 +65,11 @@ int main(int argc, char *argv[]){
     
     // Create socket
     int socket_ds=-1;
-    if ((socket_ds = socket(AF_INET, SOCK_STREAM, 0)) == -1) errno_exit("socket");
+    if ((socket_ds = socket(AF_INET, SOCK_STREAM, 0)) == -1) errno_exit("Socket");
 
     // Enable address reuse
     int reuse = 1;
-    if (setsockopt(socket_ds, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) < 0) errno_exit("setsockopt(SO_REUSEADDR) failed");
+    if (setsockopt(socket_ds, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) < 0) errno_exit("Setsockopt(SO_REUSEADDR)");
 
     // Bind socket to localhost:<port> 
     struct  sockaddr_in sin;
@@ -78,22 +78,22 @@ int main(int argc, char *argv[]){
     sin.sin_addr.s_addr = INADDR_ANY;
     sin.sin_port = htons(port);
 
-    if(bind(socket_ds, (struct sockaddr *) &sin, sizeof(sin)) == -1) errno_exit("bind");
+    if(bind(socket_ds, (struct sockaddr *) &sin, sizeof(sin)) == -1) errno_exit("Bind");
 
     // Start listening for incoming connections 
-    if(listen(socket_ds, QUEUE_LEN) == -1) errno_exit("listen");
+    if(listen(socket_ds, QUEUE_LEN) == -1) errno_exit("Listen");
     printf("Listening to port %d...\n",port);
 
     while(TRUE){
         int client_ds=-1;
         struct  sockaddr_in sClient;
         int sAddrLen = sizeof(sClient);
-        if ((client_ds = accept(socket_ds, (struct sockaddr *) &sClient, &sAddrLen)) == -1) errno_exit("accept");
+        if ((client_ds = accept(socket_ds, (struct sockaddr *) &sClient, &sAddrLen)) == -1) errno_exit("Accept");
         printf("Connection received from %s\n", inet_ntoa(sClient.sin_addr));
 
         // Read the filename from the client
         char filename[MAX_FILE_LEN];
-        read(client_ds, filename, MAX_FILE_LEN);
+        if(read(client_ds, filename, MAX_FILE_LEN)==-1) errno_exit("Read");
         clean_string(filename);
         printf("Filename: %s\n", filename);
 
@@ -105,7 +105,7 @@ int main(int argc, char *argv[]){
 
         // Receive frames from client and write them to file
         while ((rec_bytes = recv(client_ds, buffer, BUFFER_SIZE-1, 0)) > 0) {
-            write(file_ds, buffer, rec_bytes);
+            if(write(file_ds, buffer, rec_bytes)==-1) errno_exit("Write");
             
             // Count frames by detecting MJPEG start marker (0xFF 0xD8)
             count_frame(&frame_count,buffer,rec_bytes);
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]){
             
             char command[4*MAX_FILE_LEN];
             sprintf(command, "ffmpeg -i %s -c:v libx264 -preset fast -crf 23 %s > /dev/null 2>&1", filename, output_filename);
-            system(command);
+            if(system(command)==-1) errno_exit("System_command");
             printf("Conversion to MP4 complete: %s\n", output_filename);
         }
         
