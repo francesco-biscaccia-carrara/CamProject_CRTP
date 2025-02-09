@@ -87,12 +87,15 @@ int main(int argc, char *argv[]){
     while(TRUE){
         int client_ds=-1;
         struct  sockaddr_in sClient;
+        CLEAR(sClient);
         int sAddrLen = sizeof(sClient);
+
         if ((client_ds = accept(socket_ds, (struct sockaddr *) &sClient, &sAddrLen)) == -1) errno_exit("Accept");
         printf("Connection received from %s\n", inet_ntoa(sClient.sin_addr));
 
         // Read the filename from the client
         char filename[MAX_FILE_LEN];
+        CLEAR(filename);
         if(read(client_ds, filename, MAX_FILE_LEN)==-1) errno_exit("Read");
         clean_string(filename);
         printf("Filename: %s\n", filename);
@@ -116,9 +119,11 @@ int main(int argc, char *argv[]){
        // Convert MJPEG to MP4 if <-c> flag is set
         if(convert){
             char output_filename[MAX_FILE_LEN];
+            CLEAR(output_filename);
             change_extension(filename, output_filename);
             
             char command[4*MAX_FILE_LEN];
+            CLEAR(command);
             sprintf(command, "ffmpeg -i %s -c:v libx264 -preset fast -crf 23 %s > /dev/null 2>&1", filename, output_filename);
             if(system(command)==-1) errno_exit("System_command");
             printf("Conversion to MP4 complete: %s\n", output_filename);

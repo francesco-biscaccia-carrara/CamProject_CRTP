@@ -109,6 +109,7 @@ int main(int argc, char** argv){
 
     // Send filename to server
     char filename[FILENAME_MAX_LEN];
+    CLEAR(filename);
     sprintf(filename,"Webcam_%d_%d_%d.mjpeg",FRAME_WIDTH,FRAME_HEIGHT,num_frame);
     if (send(socket_ds, filename, strlen(filename), 0) == -1) errno_exit("Send_filename");
     printf("Filename %s sent to %s:%d\n",filename,inet_ntoa(sin.sin_addr),port);
